@@ -59,12 +59,12 @@ class CommandeBloc extends Bloc<CommandeEvent, CommandeState> {
   // ANNULER COMMANDE
   // ─────────────────────────────
   Future<void> _onAnnulerCommande(
-    AnnulerCommandeEvent event,
-    Emitter<CommandeState> emit,
-  ) async {
+      AnnulerCommandeEvent event,
+      Emitter<CommandeState> emit,
+      ) async {
     emit(CommandeLoading());
     try {
-      await annulerCommande(event.id);
+      await annulerCommande(event.id, event.motif);
       emit(CommandeSuccess());
     } catch (e) {
       emit(CommandeError(e.toString()));

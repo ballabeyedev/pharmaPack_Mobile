@@ -5,7 +5,7 @@ class AnnulerCommandeUseCase {
 
   AnnulerCommandeUseCase(this.repository);
 
-  Future<void> call(String id) {
-    return repository.annulerCommande(id);
+  Future<void> call(String id, String motif) {
+    return repository.annulerCommande(id, motif);
   }
 }

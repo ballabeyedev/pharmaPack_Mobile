@@ -10,5 +10,5 @@ abstract class CommandeRepository {
 
 
   Future<Commande> getCommandeDetail(String id);
-  Future<void> annulerCommande(String id);
+  Future<void> annulerCommande(String id, String motif);
 }

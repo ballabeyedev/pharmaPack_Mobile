@@ -69,7 +69,7 @@ class Env {
 
   static const commandeDetail = String.fromEnvironment(
     'COMMANDE_DETAIL',
-    defaultValue: '/pharmacie/detail-commande',
+    defaultValue: '/pharmacie/detailler-commande',
   );
 
   //commande livree

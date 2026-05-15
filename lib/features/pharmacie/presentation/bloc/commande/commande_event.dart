@@ -15,5 +15,6 @@ class LoadCommandeDetail extends CommandeEvent {
 
 class AnnulerCommandeEvent extends CommandeEvent {
   final String id;
-  AnnulerCommandeEvent(this.id);
+  final String motif;
+  AnnulerCommandeEvent(this.id, {required this.motif});
 }

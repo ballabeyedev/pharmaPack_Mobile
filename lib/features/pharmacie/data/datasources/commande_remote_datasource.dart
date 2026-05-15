@@ -9,7 +9,7 @@ abstract class CommandeRemoteDataSource {
   Future<List<CommandeModel>> fetchCommandesValidees();
   Future<List<CommandeModel>> fetchCommandesRejetees();
   Future <CommandeModel> fetchCommandeDetail(String id);
-  Future<void> annulerCommande(String id);
+  Future<void> annulerCommande(String id, String motif);
   Future<List<CommandeModel>> fetchAllCommandes();
 }
 
@@ -172,9 +172,14 @@ class CommandeRemoteDataSourceImpl implements CommandeRemoteDataSource {
 
   // ✅ ANNULER UNE COMMANDE
   @override
-  Future<void> annulerCommande(String id) async {
+  Future<void> annulerCommande(String id, String motif) async {
     try {
-      await dio.delete("${Env.annulerCommande}/$id");
+      await dio.patch(
+        "${Env.annulerCommande}/$id",
+        data: {
+          "motifAnnulation": motif,
+        },
+      );
     } catch (e) {
       throw Exception('Erreur annulerCommande');
     }

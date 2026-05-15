@@ -50,7 +50,7 @@ class CommandeRepositoryImpl implements CommandeRepository {
   }
 
   @override
-  Future<void> annulerCommande(String id) async {
-    await remoteDataSource.annulerCommande(id);
+  Future<void> annulerCommande(String id, String motif) async {
+    await remoteDataSource.annulerCommande(id, motif);
   }
 }

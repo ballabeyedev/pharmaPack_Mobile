@@ -9,6 +9,8 @@ class Commande {
   final String? adresseLivraison;
   final String modeLivraison;
   final DateTime createdAt;
+  final DateTime? updatedAt;
+  final String? motifAnnulation;
   final List<CommandeDetail> details;
 
   Commande({
@@ -20,6 +22,8 @@ class Commande {
     this.adresseLivraison,
     required this.modeLivraison,
     required this.createdAt,
+    this.updatedAt,
+    this.motifAnnulation,
     required this.details,
   });
 }
