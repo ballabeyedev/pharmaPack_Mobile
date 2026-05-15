@@ -69,6 +69,8 @@ class HistoriqueCommandesPage extends StatefulWidget {
 class _HistoriqueCommandesPageState extends State<HistoriqueCommandesPage>
     with SingleTickerProviderStateMixin {
   int _tabIndex = 0;
+  int _currentPage = 0;
+  static const int _pageSize = 20;
 
   @override
   void initState() {
@@ -78,7 +80,10 @@ class _HistoriqueCommandesPageState extends State<HistoriqueCommandesPage>
 
   // ── Chaque onglet appelle son propre endpoint ──────────────────────────
   void _loadTab(int index) {
-    setState(() => _tabIndex = index);
+    setState(() {
+      _tabIndex = index;
+      _currentPage = 0;
+    });
     context.read<CommandeBloc>().add(LoadCommandes(_tabs[index].type));
   }
 
@@ -339,21 +344,181 @@ class _HistoriqueCommandesPageState extends State<HistoriqueCommandesPage>
     );
   }
 
-  // ── LISTE ─────────────────────────────────────────────────────────────────
+  // ── LISTE AVEC PAGINATION ─────────────────────────────────────────────────
   Widget _buildList(List<Commande> commandes) {
+    final totalPages = (commandes.length / _pageSize).ceil();
+    final start = _currentPage * _pageSize;
+    final end = (start + _pageSize).clamp(0, commandes.length);
+    final pageItems = commandes.sublist(start, end);
+    final showPagination = commandes.length > _pageSize;
+
     return RefreshIndicator(
       onRefresh: () async => _loadTab(_tabIndex),
       color: _C.primary,
       backgroundColor: _C.white,
-      child: ListView.separated(
+      child: ListView(
         padding: const EdgeInsets.fromLTRB(18, 18, 18, 30),
-        itemCount: commandes.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (_, i) => _buildCard(commandes[i]),
+        children: [
+          ...List.generate(pageItems.length, (i) {
+            final isLast = i == pageItems.length - 1;
+            return Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+              child: _buildCard(pageItems[i]),
+            );
+          }),
+
+          // ── Barre de pagination ──────────────────────────────────
+          if (showPagination) ...[
+            const SizedBox(height: 20),
+            _buildPaginationBar(totalPages, commandes.length),
+          ],
+        ],
       ),
     );
   }
 
+  // ── BARRE PAGINATION ──────────────────────────────────────────────────────
+  Widget _buildPaginationBar(int totalPages, int totalItems) {
+    final canPrev = _currentPage > 0;
+    final canNext = _currentPage < totalPages - 1;
+    final start = _currentPage * _pageSize + 1;
+    final end = ((_currentPage + 1) * _pageSize).clamp(0, totalItems);
+
+    return Column(children: [
+      // Info sur les éléments affichés
+      Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Text(
+          'Affichage $start–$end sur $totalItems commandes',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            color: _C.label,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+
+      // Boutons Précédent / Indicateur / Suivant
+      Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: _C.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _C.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(children: [
+          // ── Bouton Précédent ────────────────────────────────────
+          Expanded(
+            child: GestureDetector(
+              onTap: canPrev
+                  ? () => setState(() => _currentPage--)
+                  : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: canPrev ? _C.primaryLight : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.arrow_back_rounded,
+                      size: 15,
+                      color: canPrev ? _C.primary : _C.label.withOpacity(0.35),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Précédent',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: canPrev
+                            ? _C.primary
+                            : _C.label.withOpacity(0.35),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Indicateur de page ──────────────────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(
+                '${_currentPage + 1}',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: _C.black,
+                ),
+              ),
+              Text(
+                'sur $totalPages',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 10,
+                  color: _C.label,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ]),
+          ),
+
+          // ── Bouton Suivant ──────────────────────────────────────
+          Expanded(
+            child: GestureDetector(
+              onTap: canNext
+                  ? () => setState(() => _currentPage++)
+                  : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: canNext ? _C.primaryLight : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Suivant',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: canNext
+                            ? _C.primary
+                            : _C.label.withOpacity(0.35),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 15,
+                      color: canNext ? _C.primary : _C.label.withOpacity(0.35),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ]),
+      ),
+    ]);
+  }
+
+  // ── CARTE COMMANDE ────────────────────────────────────────────────────────
   Widget _buildCard(Commande cmd) {
     final tab = _tabs[_tabIndex];
     final statutInfo = _statutInfo(cmd.statut);
