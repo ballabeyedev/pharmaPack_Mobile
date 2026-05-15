@@ -95,79 +95,6 @@ class _MainAcheteurPageState extends State<MainAcheteurPage>
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // POPUP "Plus" — s'affiche juste au-dessus du bouton "•••"
-  // ══════════════════════════════════════════════════════════════════════════
-  void _showMoreMenu() {
-    HapticFeedback.lightImpact();
-
-    // Récupère la position du bouton "•••" à l'écran
-    final RenderBox box =
-    _moreKey.currentContext!.findRenderObject() as RenderBox;
-    final Offset offset = box.localToGlobal(Offset.zero);
-    final Size   size   = box.size;
-
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: '',
-      barrierColor: Colors.black.withOpacity(0.25),
-      transitionDuration: const Duration(milliseconds: 220),
-      pageBuilder: (_, __, ___) => const SizedBox.shrink(),
-      transitionBuilder: (ctx, anim, _, __) {
-        final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutBack);
-        return Stack(
-          children: [
-            // Tap outside → ferme
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => Navigator.pop(ctx),
-                child: const ColoredBox(color: Colors.transparent),
-              ),
-            ),
-            // Menu positionné au-dessus du bouton
-            Positioned(
-              // On remonte de ~hauteur estimée du menu (160) + espace
-              top: offset.dy - 168,
-              left: offset.dx - 80, // centre approximatif
-              child: ScaleTransition(
-                scale: curved,
-                alignment: Alignment.bottomRight,
-                child: FadeTransition(
-                  opacity: anim,
-                  child: _MoreMenuCard(
-                    onAvoirsTab: () {
-                      Navigator.pop(ctx);
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (_, animation, __) =>
-                          const AvoirsPage(),
-                          transitionsBuilder: (_, animation, __, child) =>
-                              SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(0.0, 1.0),
-                                  end: Offset.zero,
-                                ).animate(CurvedAnimation(
-                                    parent: animation,
-                                    curve: Curves.easeOutCubic)),
-                                child: child,
-                              ),
-                          transitionDuration:
-                          const Duration(milliseconds: 350),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
   // BUILD
   // ══════════════════════════════════════════════════════════════════════════
   @override
@@ -226,7 +153,6 @@ class _MainAcheteurPageState extends State<MainAcheteurPage>
             // ── Profil ──
             Expanded(child: _buildNavItem(3)),
             // ── Bouton "•••" discret ──
-            _buildMoreButton(),
           ],
         ),
       ),
@@ -291,46 +217,6 @@ class _MainAcheteurPageState extends State<MainAcheteurPage>
                   ),
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Bouton "•••" discret ──────────────────────────────────────────────────
-  Widget _buildMoreButton() {
-    return GestureDetector(
-      key: _moreKey,
-      onTap: _showMoreMenu,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 28, height: 28,
-              decoration: BoxDecoration(
-                color: _C.primaryLight,
-                borderRadius: BorderRadius.circular(9),
-                border: Border.all(color: _C.border),
-              ),
-              child: const Icon(
-                Icons.more_horiz_rounded,
-                size: 16,
-                color: _C.primary,
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              'Plus',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: _C.inactive,
-              ),
-            ),
           ],
         ),
       ),
